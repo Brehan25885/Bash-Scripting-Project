@@ -2,7 +2,9 @@
 
 cd databasess
 create_menu(){
-read -p "Create Database type 1 / Select Database type 2: " choice
+read -p "Create Database type 1
+Select Database type 2
+" choice
 case $choice in
 "1") create_database
 ;;
@@ -77,16 +79,68 @@ if [[ -f $table_name ]]
   then
     echo "The table already exists"
 else
+  read -p "Enter Number of columns: " table_col
+  count=1
+   metaData="Field""|""Type""|""key"
+    while [ $count -le $table_col ]
+    do
+      read -p "Enter column name number $count: " col_name
+      read -p "Enter col type number $count:
+               int type i
+               varchar type c
+               text type t
+               date type d
+               float type f
+               " col_type
+      case $col_type in
+        i)vartype="int"
+        ;;
+        c)vartype="char"
+        ;;
+        t)vartype="text"
+        ;;
+        d)vartype="date"
+        ;;
+        f)vartype="float"
+        ;;
+        *) echo "wrong choice"
+        ;;
+        esac
+
+        if [[ $count == $table_col ]]; then
+              temp=$temp$col_name
+            else
+              temp=$temp$col_name"|"
+        fi
+
+
+
+    ((count++))
+    done
     touch $table_name
-    tableschema
+    echo -e $temp >> $table_name
+    if [[ $? == 0 ]]
+      then
+        echo "Table Created Successfully"
+  tables_menu
+    else
+      echo "Error Creating Table $tableName"
+      tables_menu
+      fi
   fi
 
 }
-tableschema(){
-  read -p "Enter Number of columns: " table_col
-  read -p "Enter Number of rows: " table_row
-
-
+drop_table (){
+  read -p "Enter table name : " table_name
+  rm $table_name
+  if [[ $? == 0 ]]
+  then
+    echo "Table Dropped Successfully"
+  else
+    echo "Error Dropping Table $tName"
+  fi
+tables_menu
 
 }
+
 create_menu
