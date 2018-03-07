@@ -1,8 +1,10 @@
 #!/bin/bash
 
-cd databases
+cd databasess
 create_menu(){
-read -p "Create Database type 1 / Select Database type 2: " choice
+read -p "Create Database type 1
+Select Database type 2
+" choice
 case $choice in
 "1") create_database
 ;;
@@ -15,8 +17,13 @@ esac
 }
 create_database(){
 read -p "Enter Database name: " Database_name
-test -d $Database_name && echo "The database already exists" || mkdir $Database_name || tables_menu
-
+if [[ -d $Database_name ]]
+  then
+    echo "The database already exists"
+else
+    mkdir $Database_name
+    create_menu
+  fi
 }
 tables_menu(){
               read -p "
@@ -33,7 +40,7 @@ tables_menu(){
               Exit k
               " option
               case $option in
-                            a) create_tables
+                            a) create_table
                               ;;
                             b) select_table
                               ;;
@@ -58,6 +65,81 @@ tables_menu(){
                             *) exit 0
                             ;;
                           esac
+
+}
+select_database(){
+  read -p "Enter Database name: " Database_name
+  cd $Database_name
+  tables_menu
+
+}
+create_table(){
+read -p "Enter Table name: " table_name
+if [[ -f $table_name ]]
+  then
+    echo "The table already exists"
+else
+  read -p "Enter Number of columns: " table_col
+  count=1
+   metaData="Field""|""Type""|""key"
+    while [ $count -le $table_col ]
+    do
+      read -p "Enter column name number $count: " col_name
+      read -p "Enter col type number $count:
+               int type i
+               varchar type c
+               text type t
+               date type d
+               float type f
+               " col_type
+      case $col_type in
+        i)vartype="int"
+        ;;
+        c)vartype="char"
+        ;;
+        t)vartype="text"
+        ;;
+        d)vartype="date"
+        ;;
+        f)vartype="float"
+        ;;
+        *) echo "wrong choice"
+        ;;
+        esac
+
+        if [[ $count == $table_col ]]; then
+              temp=$temp$col_name
+            else
+              temp=$temp$col_name"|"
+        fi
+
+
+
+    ((count++))
+    done
+    touch $table_name
+    echo -e $temp >> $table_name
+    if [[ $? == 0 ]]
+      then
+        echo "Table Created Successfully"
+  tables_menu
+    else
+      echo "Error Creating Table $tableName"
+      tables_menu
+      fi
+  fi
+
+}
+drop_table (){
+  read -p "Enter table name : " table_name
+  rm $table_name
+  if [[ $? == 0 ]]
+  then
+    echo "Table Dropped Successfully"
+  else
+    echo "Error Dropping Table $tName"
+  fi
+tables_menu
 
 }
 
