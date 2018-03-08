@@ -278,4 +278,105 @@ field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") 
        fi
     fi
 }
+
+
+function alter_table() {
+  read -p " changing table name type c
+            add a new field type a
+            delete a field type d
+            changing the datatype of a certain field type t
+            change col name type f
+           " option
+  case $option in
+    c) renameTable
+    ;;
+    a)newField
+    ;;
+    d)deleteField
+    ;;
+    t)changeType
+    ;;
+    f)changeField
+    ;;
+    *) echo "wrong choice"
+    ;;
+    esac
+  }
+  function deleteField() {
+
+    read -p "Enter table name : " table_name
+    read -p "Enter the field name: " col_name
+    field_no=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$col_name'") print NF}}}' $table_name)
+    if [[ $field_no == "" ]]
+    then
+      echo "Not Found"
+      tables_menu
+    else
+      for line in $table_name ; do
+        del=$(sed -i "/$(( field_no ))/d" $table_name)
+        echo "$line"
+      done
+      # for (( i = 1; i <= $(( field_no )); i++ )); do
+      # del=$(sed -i "/$(( field_no ))/d" $table_name)
+      # done
+      echo "the field was deleted Successfully"
+    fi
+  }
+  function newField() {
+
+    read -p "Enter table name : " table_name
+    read -p "Enter the new col name : " new_col
+
+  }
+function renameTable() {
+
+  read -p "Enter table name : " table_name
+  read -p "Enter the new name : " new_val
+  mv $table_name $new_val
+  mv .$table_name .$new_val
+  echo "The file name was renamed Successfully"
+
+}
+
+  function changeType {
+    read -p "Enter table name : " table_name
+    read -p "Enter col name : " field
+  field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") print i}}}' .$table_name)
+    if [[ $field_name == "" ]]
+    then
+      echo "Not Found"
+      tables_menu
+    else
+      read -p "Enter data type to be updated: " old_val
+      result=$(cat .$table_name | grep "$old_val")
+        if [[ $result == "" ]]
+        then
+          echo "Value Not Found"
+        tables_menu
+       else
+        read -p "Enter the new value: " newvalue
+        update=$(sed -i "s/$old_val/$newvalue/g" $table_name)
+        echo "The field was updated Successfully"
+         fi
+      fi
+  }
+
+  function changeField(){
+  read -p "Enter table name : " table_name
+  read -p "Enter col name : " field
+field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") print i}}}' $table_name)
+  if [[ $field_name == "" ]]
+  then
+    echo "Not Found"
+    tables_menu
+  else
+    read -p "Enter the new value: " newvalue
+    result=$(cat $table_name | grep "$field")
+    update=$(sed -i "s/$field/$newvalue/g" $table_name)
+    echo "The field was updated Successfully"
+
+    fi
+}
+
+
 create_menu
