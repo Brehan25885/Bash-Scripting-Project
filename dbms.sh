@@ -202,8 +202,8 @@ fi
         while [[ true ]]; do
  if [[ $data =~ ^[`awk 'BEGIN{FS="|" ; ORS=" "}{if(NR != 1)print $(('$i'-1))}' $table_name`]$ ]]; then
      echo -e "invalid input for Primary Key !!"
-   elif [[ $data="" ]]; then
-          echo -e "please enter value "
+   # elif [[ $data="" ]]; then
+   #        echo -e "please enter value "
 
           else
 
@@ -233,4 +233,49 @@ fi
 
 }
 
+function select_record() {
+  echo -e "Enter Table Name: \c"
+  read table_name
+  echo -e "Enter val: \c"
+  read val
+pr=$(cat $table_name | grep "$val")
+echo "$pr"
+  tables_menu
+}
+
+function delete_record() {
+  echo -e "Enter Table Name: \c"
+  read table_name
+  echo -e "Enter val: \c"
+  read val
+del=$(sed -i "/$val/d" $table_name)
+if [[ $? == 0 ]]
+then
+  echo "row Deleted Successfully"
+else
+  echo "Error deleting Data"
+fi
+}
+function edit_record {
+  read -p "Enter table name : " table_name
+  read -p "Enter col name : " field
+field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") print i}}}' $table_name)
+  if [[ $field_name == "" ]]
+  then
+    echo "Not Found"
+    tables_menu
+  else
+    read -p "Enter value to be updated: " old_val
+    result=$(cat $table_name | grep "$old_val")
+      if [[ $result == "" ]]
+      then
+        echo "Value Not Found"
+      tables_menu
+     else
+      read -p "Enter the new value: " newvalue
+      update=$(sed -i "s/$old_val/$newvalue/g" $table_name)
+      echo "The field was updated Successfully"
+       fi
+    fi
+}
 create_menu
