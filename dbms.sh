@@ -110,7 +110,7 @@ else
         if [[ $primary_key=="" ]];then
         read -p "make primary key:yes press y no press n " p_choices
         case $p_choices in
-          y) primary_key="Primary Key";
+          y) primary_key="PrimaryKey"
            constraint+="\n"$col_name"|"$vartype"|"$primary_key
            ;;
            n) constraint+="\n"$col_name"|"$vartype"|"""
@@ -118,7 +118,7 @@ else
            *) echo "wrong choice"
            ;;
          esac
-       else
+       elif ![[ $primary_key=="PrimaryKey"]];then
          constraint+="\n"$col_name"|"$vartype"|"""
        fi
         if [[ $count == $table_col ]]; then
@@ -149,6 +149,8 @@ else
 drop_table (){
   read -p "Enter table name : " table_name
   rm $table_name
+  rm .$table_name
+
   if [[ $? == 0 ]]
   then
     echo "Table Dropped Successfully"
@@ -156,6 +158,78 @@ drop_table (){
     echo "Error Dropping Table $tName"
   fi
 tables_menu
+
+}
+add_record(){
+  read -p "Enter table name : " table_name
+  if ! [[ -f $table_name ]]
+    then
+      echo "The table doesn't exist choose another table"
+  fi
+ num_col=`awk 'END{print NR}' .$table_name`
+
+  for (( i = 2; i <= $num_col; i++ )); do
+    colName=$(awk 'BEGIN{FS="|"}{ if(NR=='$i') print $1}' .$table_name)
+    colType=$( awk 'BEGIN{FS="|"}{if(NR=='$i') print $2}' .$table_name)
+    colKey=$( awk 'BEGIN{FS="|"}{if(NR=='$i') print $3}' .$table_name)
+    echo -e "$colName ($colType) = \c"
+    read data
+    if [[ $colType == "int" ]]; then
+    while ! [[ $data =~ ^[0-9]*$ ]]; do
+      echo -e "invalid DataType !!"
+      echo -e "$colName ($colType) = \c"
+      read data
+    done
+  fi
+  if [[ $colType == "text" ]]; then
+  while ! [[ $data =~ ^[a-zA-Z]*$ ]]; do
+    echo -e "invalid DataType !!"
+    echo -e "$colName ($colType) = \c"
+    read data
+  done
+fi
+if [[ $colType == "date" ]]; then
+while ! [[ $data =~ ^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$ ]]; do
+  echo -e "invalid DataType !!"
+  echo -e "$colName ($colType) = \c"
+  read data
+done
+fi
+
+
+
+  if [[ $colKey == "PrimaryKey" ]]; then
+        while [[ true ]]; do
+ if [[ $data =~ ^[`awk 'BEGIN{FS="|" ; ORS=" "}{if(NR != 1)print $(('$i'-1))}' $table_name`]$ ]]; then
+     echo -e "invalid input for Primary Key !!"
+   elif [[ $data="" ]]; then
+          echo -e "please enter value "
+
+          else
+
+            break;
+          fi
+          echo -e "$colName ($colType) = \c"
+          read data
+        done
+  fi
+
+
+  if [[ $i == $num_col ]]; then
+     row=$row$data"\n"
+   else
+     row=$row$data"|"
+   fi
+ done
+ echo -e $row"\c" >> $table_name
+ if [[ $? == 0 ]]
+ then
+   echo "Data Inserted Successfully"
+ else
+   echo "Error Inserting Data into Table $table_name"
+ fi
+ row=""
+ tables_menu
 
 }
 

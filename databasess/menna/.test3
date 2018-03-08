@@ -1,0 +1,3 @@
+Field|Type|key
+nn|date|
+hf|int|PrimaryKey
