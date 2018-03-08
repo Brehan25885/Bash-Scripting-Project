@@ -81,7 +81,8 @@ if [[ -f $table_name ]]
 else
   read -p "Enter Number of columns: " table_col
   count=1
-   metaData="Field""|""Type""|""key"
+  primary_key=""
+   constraint="Field""|""Type""|""key"
     while [ $count -le $table_col ]
     do
       read -p "Enter column name number $count: " col_name
@@ -106,7 +107,20 @@ else
         *) echo "wrong choice"
         ;;
         esac
-
+        if [[ $primary_key=="" ]];then
+        read -p "make primary key:yes press y no press n " p_choices
+        case $p_choices in
+          y) primary_key="Primary Key";
+           constraint+="\n"$col_name"|"$vartype"|"$primary_key
+           ;;
+           n) constraint+="\n"$col_name"|"$vartype"|"""
+           ;;
+           *) echo "wrong choice"
+           ;;
+         esac
+       else
+         constraint+="\n"$col_name"|"$vartype"|"""
+       fi
         if [[ $count == $table_col ]]; then
               temp=$temp$col_name
             else
@@ -117,6 +131,8 @@ else
 
     ((count++))
     done
+    touch .$table_name
+    echo -e $constraint >> .$table_name
     touch $table_name
     echo -e $temp >> $table_name
     if [[ $? == 0 ]]
