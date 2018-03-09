@@ -306,19 +306,31 @@ function alter_table() {
 
     read -p "Enter table name : " table_name
     read -p "Enter the field name: " col_name
-    field_no=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$col_name'") print NF}}}' $table_name)
+    field_no=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$col_name'") print i}}}' $table_name)
+    echo "$field_no"
     if [[ $field_no == "" ]]
     then
       echo "Not Found"
       tables_menu
     else
-      for line in $table_name ; do
-        del=$(sed -i "/$(( field_no ))/d" $table_name)
-        echo "$line"
-      done
-      # for (( i = 1; i <= $(( field_no )); i++ )); do
-      # del=$(sed -i "/$(( field_no ))/d" $table_name)
-      # done
+    #  sed -i -r 's/\S+//3' file
+      #del=$(sed -i -r "s/\S+//$(( field_no ))" $table_name)
+      #del= $(awk "inplace NF $(( field_no ))" $table_name)
+      touch t
+    fie=$(( field_no ))
+    #echo "$fie"
+    result=$(cat $table_name | cut -d '|' --complement -f "$fie")
+    echo "$result" >> t
+    echo "$result"
+    mv t $table_name
+    #del= $(cut -d '|' --complement -f "$fie" $table_name)
+    #cut -d '|' --complement -f 2 iti
+      #del= $(cut -d '|' -f "$fie" $table_name)
+#       IFS='
+# '
+#        for (( i = 1; i <= $(( field_no )); i++ )); do
+#        del=$(sed -i "/$(( field_no ))/d" $table_name)
+#        done
       echo "the field was deleted Successfully"
     fi
   }
@@ -378,5 +390,24 @@ field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") 
     fi
 }
 
+display_table(){
+  read -p "Enter table name: " table_name
+ cat .$table_name
 
+}
+sort_table(){
+  read -p "Enter table name : " table_name
+  read -p "Enter the field name: " col_name
+  field_no=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$col_name'") print i}}}' $table_name)
+echo "$field_no"
+  if [[ $field_no == "" ]]
+  then
+    echo "Not Found"
+    tables_menu
+else
+fieldN=$(( field_no ))
+  echo "$fieldN"
+  cat $table_name | sort -V -k "$fieldN" $table_name
+fi
+}
 create_menu
