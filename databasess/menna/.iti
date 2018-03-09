@@ -1,3 +1,6 @@
 Field|Type|key
-menna|int|PrimaryKey
-brehan|text|
+menna||PrimaryKey
+brehan|int|
+menna2|text
+men|
+nn|text

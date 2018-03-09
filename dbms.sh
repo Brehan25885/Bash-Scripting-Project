@@ -189,7 +189,8 @@ add_record(){
   done
 fi
 if [[ $colType == "date" ]]; then
-while ! [[ $data =~ ^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$ ]]; do
+  while [[ !$data =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; do
+#while ! [[ $data =~ ^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$ ]]; do
   echo -e "invalid DataType !!"
   echo -e "$colName ($colType) = \c"
   read data
@@ -338,7 +339,19 @@ function alter_table() {
 
     read -p "Enter table name : " table_name
     read -p "Enter the new col name : " new_col
-
+    read -p "Enter the new col type: " new_type
+    case $new_type in
+    "int")type="int"
+    ;;
+    "text")type="text"
+    ;;
+    *)echo "wrong choice"
+    ;;
+    esac
+    #field_no=$(awk 'BEGIN{FS="|"}{if(NR==1){ print $0 "|",$new_col }}' $table_name)
+    field_no= $(sed -i "1 s/$/|$new_col/" $table_name)
+    echo "$new_col|$type" >> .$table_name
+    echo "$field_no"
   }
 function renameTable() {
 
@@ -353,8 +366,10 @@ function renameTable() {
   function changeType {
     read -p "Enter table name : " table_name
     read -p "Enter col name : " field
-  field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") print i}}}' .$table_name)
-    if [[ $field_name == "" ]]
+  #field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") print i}}}' .$table_name)
+  field_no=$(awk "/$field/{ print NR; exit }" .$table_name)
+  echo "$field_no"
+    if [[ $field_no == "" ]]
     then
       echo "Not Found"
       tables_menu
@@ -367,7 +382,19 @@ function renameTable() {
         tables_menu
        else
         read -p "Enter the new value: " newvalue
-        update=$(sed -i "s/$old_val/$newvalue/g" $table_name)
+        case $newvalue in
+        "int")type="int"
+        ;;
+        "text")type="text"
+        ;;
+        *) echo "wrong choice"
+          tables_menu
+        ;;
+        esac
+
+
+
+        update=$(sed -i "$field_no s/$old_val/$type/g" .$table_name)
         echo "The field was updated Successfully"
          fi
       fi
@@ -385,6 +412,7 @@ field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") 
     read -p "Enter the new value: " newvalue
     result=$(cat $table_name | grep "$field")
     update=$(sed -i "s/$field/$newvalue/g" $table_name)
+    update2=$(sed -i "s/$field/$newvalue/g" .$table_name)
     echo "The field was updated Successfully"
 
     fi
