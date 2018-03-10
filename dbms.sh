@@ -28,7 +28,6 @@ else
 tables_menu(){
               read -p "
               Create tables type a
-              Select table type b
               Alter Table type c
               Add Record type d
               Edit Record[s] type e
@@ -41,8 +40,6 @@ tables_menu(){
               " option
               case $option in
                             a) create_table
-                              ;;
-                            b) select_table
                               ;;
                             c) alter_table
                                 ;;
@@ -88,26 +85,20 @@ else
       read -p "Enter column name number $count: " col_name
       read -p "Enter col type number $count:
                int type i
-               varchar type c
                text type t
                date type d
-               float type f
                " col_type
       case $col_type in
         i)vartype="int"
-        ;;
-        c)vartype="char"
         ;;
         t)vartype="text"
         ;;
         d)vartype="date"
         ;;
-        f)vartype="float"
-        ;;
         *) echo "wrong choice"
         ;;
         esac
-        if [[ $primary_key=="" ]];then
+        if [[ $primary_key == "" ]];then
         read -p "make primary key:yes press y no press n " p_choices
         case $p_choices in
           y) primary_key="PrimaryKey"
@@ -118,7 +109,7 @@ else
            *) echo "wrong choice"
            ;;
          esac
-       elif ![[ $primary_key=="PrimaryKey"]];then
+       elif ! [[ $primary_key == "PrimaryKey" ]];then
          constraint+="\n"$col_name"|"$vartype"|"""
        fi
         if [[ $count == $table_col ]]; then
@@ -189,9 +180,9 @@ add_record(){
   done
 fi
 if [[ $colType == "date" ]]; then
-  while [[ !$data =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; do
+  while ! [[ $data =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; do
 #while ! [[ $data =~ ^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$ ]]; do
-  echo -e "invalid DataType !!"
+  echo -e "invalid DataType insert date as YYYY-MM-DD"
   echo -e "$colName ($colType) = \c"
   read data
 done
@@ -203,8 +194,8 @@ fi
         while [[ true ]]; do
  if [[ $data =~ ^[`awk 'BEGIN{FS="|" ; ORS=" "}{if(NR != 1)print $(('$i'-1))}' $table_name`]$ ]]; then
      echo -e "invalid input for Primary Key !!"
-   # elif [[ $data="" ]]; then
-   #        echo -e "please enter value "
+   elif [[ $data == "" ]]; then
+           echo -e "please enter value "
 
           else
 
@@ -235,12 +226,104 @@ fi
 }
 
 function select_record() {
-  echo -e "Enter Table Name: \c"
-  read table_name
-  echo -e "Enter val: \c"
-  read val
-pr=$(cat $table_name | grep "$val")
-echo "$pr"
+  read -p "
+  select table type a
+  select by col type b
+  select by row type c
+  Exit k
+  " option
+  case $option in
+                a) read -p "Enter table name : " table_name
+                if [ -f $table_name ]; then
+                  cat $table_name
+                  echo "<html>" >> 1.html
+
+                  echo "<Body>" >> 1.html
+
+                  awk 'BEGIN{FS="|"; print "<table border="1">"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' $table_name >> 1.html
+
+                  echo "</Body>" >> 1.html
+
+                  echo "</html>" >> 1.html
+
+
+                else
+                  echo "The table doesn't exist in the database"
+                fi
+                  ;;
+                b) read -p "Enter table name : " table_name
+                  read -p "Enter the col number: " col_no
+                if [ -f $table_name ]; then
+                      field_no=$(awk -F'|' '{print NF; exit}' $table_name)
+                    field=$(( field_no ))
+                      #echo "$field"
+                      if [ $col_no -le $field ]
+                      then
+                        touch temp
+                        #cat $table_name | head -1 >temp
+                        cat $table_name | cut -d '|' -f "$col_no" > temp
+                        echo "<html>" > $table_name.html
+
+                        echo "<Body>" >> $table_name.html
+
+                         awk 'BEGIN{print "<table border="1">"} {print "<tr>";print "<td>" $0"</td>";print "</tr>"} END{print "</table>"}' temp >> $table_name.html
+                         #awk 'BEGIN{print "<table border="1">"} {print "<tr>";for(i=1;i<=NR;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' temp >> $table_name.html
+
+                        echo "</Body>" >> $table_name.html
+
+                        echo "</html>" >> $table_name.html
+                    else
+                      echo "column number not found"
+                    fi
+
+                else
+                  echo " The table doesn't exist in the database"
+                fi
+                  ;;
+                c) read -p "Enter table name : " table_name
+                  read -p "Enter the row number: " row_no
+                if [ -f $table_name ]; then
+                      row_no=$(cat date | wc -l)
+                      #echo $row_no
+                    row=$(( row_no ))
+                      #echo "$field"
+                      if [ $row_no -le $row ]
+                      then
+                        touch temp
+
+                        cat $table_name | head -1 > temp
+                        cat $table_name | sed -n "$row_no"p >> temp
+                        echo "<html>" > $table_name.html
+
+                        echo "<Body>" >> $table_name.html
+                        awk 'BEGIN{FS="|"; print "<table border="1">"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' temp >> $table_name.html
+                        echo "</Body>" >> $table_name.html
+                        echo "</html>" >> $table_name.html
+                        #echo $pr
+                          #$( awk '{ print $'$row_no' }' $table_name)
+                        else
+                      echo "column number not found"
+                    fi
+
+                else
+                  echo " The table doesn't exist in the database"
+                fi
+                    ;;
+                k) exit 0
+                ;;
+                *) exit 0
+                ;;
+              esac
+
+
+
+
+
+
+#   echo -e "Enter val: \c"
+#   read val
+# pr=$(cat $table_name | grep -w "$val")
+# echo "$pr"
   tables_menu
 }
 
