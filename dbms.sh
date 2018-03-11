@@ -4,11 +4,14 @@ cd databasess
 create_menu(){
 read -p "Create Database type 1
 Select Database type 2
+Exit type 0
 " choice
 case $choice in
 "1") create_database
 ;;
 "2") select_database
+;;
+"0") exit 0
 ;;
 *) exit 0
 ;;
@@ -181,7 +184,6 @@ add_record(){
 fi
 if [[ $colType == "date" ]]; then
   while ! [[ $data =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; do
-#while ! [[ $data =~ ^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$ ]]; do
   echo -e "invalid DataType insert date as YYYY-MM-DD"
   echo -e "$colName ($colType) = \c"
   read data
@@ -227,10 +229,11 @@ fi
 
 function select_record() {
   read -p "
-  select table type a
-  select by col type b
-  select by row type c
-  Exit k
+            select table type a
+            select by col type b
+            select by row type c
+            back to the main menu 0
+            Exit k
   " option
   case $option in
                 a) read -p "Enter table name : " table_name
@@ -256,18 +259,15 @@ function select_record() {
                 if [ -f $table_name ]; then
                       field_no=$(awk -F'|' '{print NF; exit}' $table_name)
                     field=$(( field_no ))
-                      #echo "$field"
                       if [ $col_no -le $field ]
                       then
                         touch temp
-                        #cat $table_name | head -1 >temp
                         cat $table_name | cut -d '|' -f "$col_no" > temp
                         echo "<html>" > $table_name.html
 
                         echo "<Body>" >> $table_name.html
 
                          awk 'BEGIN{print "<table border="1">"} {print "<tr>";print "<td>" $0"</td>";print "</tr>"} END{print "</table>"}' temp >> $table_name.html
-                         #awk 'BEGIN{print "<table border="1">"} {print "<tr>";for(i=1;i<=NR;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' temp >> $table_name.html
 
                         echo "</Body>" >> $table_name.html
 
@@ -284,9 +284,7 @@ function select_record() {
                   read -p "Enter the row number: " row_no
                 if [ -f $table_name ]; then
                       row_no=$(cat date | wc -l)
-                      #echo $row_no
                     row=$(( row_no ))
-                      #echo "$field"
                       if [ $row_no -le $row ]
                       then
                         touch temp
@@ -299,8 +297,7 @@ function select_record() {
                         awk 'BEGIN{FS="|"; print "<table border="1">"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' temp >> $table_name.html
                         echo "</Body>" >> $table_name.html
                         echo "</html>" >> $table_name.html
-                        #echo $pr
-                          #$( awk '{ print $'$row_no' }' $table_name)
+
                         else
                       echo "column number not found"
                     fi
@@ -309,21 +306,14 @@ function select_record() {
                   echo " The table doesn't exist in the database"
                 fi
                     ;;
+                "0") tables_menu
+                ;;
                 k) exit 0
                 ;;
                 *) exit 0
                 ;;
               esac
 
-
-
-
-
-
-#   echo -e "Enter val: \c"
-#   read val
-# pr=$(cat $table_name | grep -w "$val")
-# echo "$pr"
   tables_menu
 }
 
@@ -365,11 +355,13 @@ field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") 
 
 
 function alter_table() {
-  read -p " changing table name type c
+  read -p "
+            changing table name type c
             add a new field type a
             delete a field type d
             changing the datatype of a certain field type t
             change col name type f
+            back to the main menu type 0
            " option
   case $option in
     c) renameTable
@@ -381,6 +373,8 @@ function alter_table() {
     t)changeType
     ;;
     f)changeField
+    ;;
+    "0")tables_menu
     ;;
     *) echo "wrong choice"
     ;;
@@ -397,24 +391,13 @@ function alter_table() {
       echo "Not Found"
       tables_menu
     else
-    #  sed -i -r 's/\S+//3' file
-      #del=$(sed -i -r "s/\S+//$(( field_no ))" $table_name)
-      #del= $(awk "inplace NF $(( field_no ))" $table_name)
       touch t
     fie=$(( field_no ))
-    #echo "$fie"
     result=$(cat $table_name | cut -d '|' --complement -f "$fie")
     echo "$result" >> t
     echo "$result"
     mv t $table_name
-    #del= $(cut -d '|' --complement -f "$fie" $table_name)
-    #cut -d '|' --complement -f 2 iti
-      #del= $(cut -d '|' -f "$fie" $table_name)
-#       IFS='
-# '
-#        for (( i = 1; i <= $(( field_no )); i++ )); do
-#        del=$(sed -i "/$(( field_no ))/d" $table_name)
-#        done
+
       echo "the field was deleted Successfully"
     fi
   }
@@ -449,7 +432,6 @@ function renameTable() {
   function changeType {
     read -p "Enter table name : " table_name
     read -p "Enter col name : " field
-  #field_name=$(awk 'BEGIN{FS="|"}{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$field'") print i}}}' .$table_name)
   field_no=$(awk "/$field/{ print NR; exit }" .$table_name)
   echo "$field_no"
     if [[ $field_no == "" ]]
