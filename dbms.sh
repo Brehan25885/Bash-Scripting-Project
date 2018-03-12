@@ -112,7 +112,7 @@ else
            *) echo "wrong choice"
            ;;
          esac
-       elif ! [[ $primary_key == "PrimaryKey" ]];then
+       else
          constraint+="\n"$col_name"|"$vartype"|"""
        fi
         if [[ $count == $table_col ]]; then
@@ -161,20 +161,21 @@ add_record(){
       echo "The table doesn't exist choose another table"
   fi
  num_col=`awk 'END{print NR}' .$table_name`
-
   for (( i = 2; i <= $num_col; i++ )); do
     colName=$(awk 'BEGIN{FS="|"}{ if(NR=='$i') print $1}' .$table_name)
     colType=$( awk 'BEGIN{FS="|"}{if(NR=='$i') print $2}' .$table_name)
     colKey=$( awk 'BEGIN{FS="|"}{if(NR=='$i') print $3}' .$table_name)
     echo -e "$colName ($colType) = \c"
     read data
+
     if [[ $colType == "int" ]]; then
     while ! [[ $data =~ ^[0-9]*$ ]]; do
       echo -e "invalid DataType !!"
       echo -e "$colName ($colType) = \c"
       read data
     done
-  fi
+    fi
+
   if [[ $colType == "text" ]]; then
   while ! [[ $data =~ ^[a-zA-Z]*$ ]]; do
     echo -e "invalid DataType !!"
@@ -194,15 +195,13 @@ fi
 
   if [[ $colKey == "PrimaryKey" ]]; then
         while [[ true ]]; do
- if [[ $data =~ ^[`awk 'BEGIN{FS="|" ; ORS=" "}{if(NR != 1)print $(('$i'-1))}' $table_name`]$ ]]; then
-     echo -e "invalid input for Primary Key !!"
-   elif [[ $data == "" ]]; then
-           echo -e "please enter value "
-
-          else
-
-            break;
-          fi
+          if [[ $data =~ ^[`awk 'BEGIN{FS="|" ; ORS=" "}{if(NR != 1)print $(('$i'-1))}' $table_name`]$ ]]; then
+              echo -e "invalid input for Primary Key !!"
+            elif [[ $data == "" ]]; then
+                echo -e "please enter value "
+                  else
+                      break;
+            fi
           echo -e "$colName ($colType) = \c"
           read data
         done
@@ -216,12 +215,14 @@ fi
    fi
  done
  echo -e $row"\c" >> $table_name
+
  if [[ $? == 0 ]]
  then
    echo "Data Inserted Successfully"
  else
    echo "Error Inserting Data into Table $table_name"
  fi
+
  row=""
  tables_menu
 

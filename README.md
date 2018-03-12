@@ -5,7 +5,7 @@
 			* exit 
 - if the user create a database it redirects him to the main menu
 
-- if the user selects a database it redirects him to tables menu
+- if the user selects a database it redirects him to tables menu:
 
 		user can either * create table
 				* alter table
@@ -19,7 +19,7 @@
 				* Exit 
 
 
-`- if the user selects alter table user can either
+`- if the user selects alter table user can either:
 	* change table name
  	*add a new field 
         * delete a field 
@@ -27,7 +27,7 @@
         *change col name 
 	*back to the main menu
 
-- if the user selects Select Records 
+- if the user selects Select Records:
 
  * select table type a
  * select by col type b
