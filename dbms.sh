@@ -73,7 +73,16 @@ tables_menu(){
 }
 select_database(){
   read -p "Enter Database name: " Database_name
+  if ! [[ -d $Database_name ]]; then
+    echo "
+
+    The database doesn't exist
+
+"
+    create_menu
+  else
   cd $Database_name
+fi
   tables_menu
 
 }
